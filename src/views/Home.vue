@@ -1,10 +1,18 @@
 <template>
   <div class="home">
     <h1>BTC PREDICT PRICE GAME</h1>
-
-    <div id="chart">
-      <VueApexCharts type="area" height="350" :options="chartOptions" :series="series"/>
+    <p>Will Bitcoin go up or down in the next 5min ?</p>
+    <div class="chart">
+      <apexchart width="500" type="area" :options="options" :series="series"></apexchart>
     </div>
+    <div>$ {{parseFloat(historyBTC[historyBTC.length - 1][4]).toFixed(2)}}</div>
+    <div>
+      <div>{{change.toFixed(2)}}%</div>
+    </div>
+    <div>{{balance}} points</div>
+    <cardBet v-if="onBet" :betInfo="betInfo"/>
+    <button v-on:click="makeBet(true)">Going Up</button>
+    <button v-on:click="makeBet(false)">Going Down</button>
   </div>
 </template>
 
@@ -12,33 +20,32 @@
 // @ is an alias to /src
 import HelloWithName from '@/components/HelloWithName.vue'
 import Footer from "@/components/Footer";
-import VueApexCharts from "apexcharts";
+import CardBet from "@/components/cardBet";
+
+const API_URL = "https://api.binance.com/api/v3/";
 
 export default {
   name: 'Home',
   components: {
+    CardBet,
     HelloWithName,
     Footer,
-    VueApexCharts,
+  },
+  created: function() {
+    this.getMarketData();
   },
   data: function() {
     return {
-      series: [{
-        name: 'XYZ MOTORS',
-        data: [34, 25, 48, 124, 18, 39, 48, 100]
-      }],
-      chartOptions: {
+      options: {
         chart: {
+          id: 'area-datetime',
           type: 'area',
-          stacked: false,
+          toolbar: {
+            show: false,
+          },
           height: 350,
           zoom: {
-            type: 'x',
-            enabled: true,
             autoScaleYaxis: true
-          },
-          toolbar: {
-            autoSelected: 'zoom'
           }
         },
         dataLabels: {
@@ -46,44 +53,96 @@ export default {
         },
         markers: {
           size: 0,
+          style: 'hollow',
         },
-        title: {
-          text: 'Stock Price Movement',
-          align: 'left'
+        xaxis: {
+          type: 'datetime',
+          tickAmount: 6,
+        },
+        stroke: {
+          width: 1,
+          curve: 'straight'
+        },
+        tooltip: {
+          x: {
+            format: 'dd MMM yyyy'
+          }
         },
         fill: {
           type: 'gradient',
           gradient: {
             shadeIntensity: 1,
-            inverseColors: false,
-            opacityFrom: 0.5,
-            opacityTo: 0,
-            stops: [0, 90, 100]
-          },
-        },
-        yaxis: {
-          labels: {
-            formatter: function (val) {
-              return (val / 1000000).toFixed(0);
-            },
-          },
-          title: {
-            text: 'Price'
-          },
-        },
-        xaxis: {
-          type: 'datetime',
-        },
-        tooltip: {
-          shared: false,
-          y: {
-            formatter: function (val) {
-              return (val / 1000000).toFixed(0)
-            }
+            opacityFrom: 0.7,
+            opacityTo: 0.9,
+            stops: [0, 100]
           }
-        }
+        },
       },
+      series: [{
+        name: 'BTC-USDT',
+        data: []
+      }],
+      historyBTC:[],
+      change: 0,
+      balance: 10000,
+      historyBets: [],
+      onBet: false,
+      betInfo: {
+        priceBet: null,
+        amount: null,
+        isUp: null,
+      }
     }
+  },
+  methods: {
+    getMarketData: function () {
+      this.axios.get(`${API_URL}klines?symbol=BTCUSDT&interval=5m`)
+        .then(responseArrayQuote =>  {
+          this.historyBTC = responseArrayQuote.data
+          }
+        ).then(_ => {
+          this.buildLineGraph();
+          this.getChange();
+      })
+      this.updateMarketData();
+    },
+
+    buildLineGraph: function (){
+      const array = [];
+      this.historyBTC.forEach(history => {
+        array.push([history[6], parseFloat(history[4])])
+      })
+      this.series[0].data = array;
+    },
+
+    updateMarketData: function() {
+        setTimeout(() => {
+          this.getMarketData();
+        }, 3000);
+    },
+
+    makeBet: function (isUp){
+      if(this.balance >= 1000 && !this.onBet){
+        const betInfo = {
+          priceBet: parseFloat(this.historyBTC[this.historyBTC.length - 1][4]),
+          amount: 1000,
+          isUp : isUp
+        }
+        this.balance -= 1000
+        this.betInfo = betInfo;
+        this.onBet = true;
+      }
+    },
+
+    getChange: function (){
+      this.change = this.calculatePercentChange(parseFloat(this.historyBTC[this.historyBTC.length - 1][4]), parseFloat(this.historyBTC[this.historyBTC.length - 3][4]))
+    },
+
+    calculatePercentChange: function (newNumber, oldNumber){
+      const descreaseValue = newNumber - oldNumber;
+      return (descreaseValue/newNumber) * 100
+    },
   }
+
 }
 </script>

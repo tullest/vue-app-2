@@ -30,4 +30,10 @@
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+
+.chart{
+  display: flex;
+  justify-content: center;
+}
+
 </style>
