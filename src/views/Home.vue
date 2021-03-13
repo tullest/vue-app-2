@@ -87,11 +87,7 @@ export default {
       balance: 10000,
       historyBets: [],
       onBet: false,
-      betInfo: {
-        priceBet: null,
-        amount: null,
-        isUp: null,
-      }
+      betInfo: {}
     }
   },
   methods: {
@@ -115,10 +111,30 @@ export default {
       this.series[0].data = array;
     },
 
+    checkBet: function () {
+      let isWin = false;
+      const currentPrice = this.historyBTC[this.historyBTC.length - 1][4];
+      if(currentPrice > this.betInfo.priceBet && this.betInfo.isUp){
+        isWin = true;
+      }else if(currentPrice < this.betInfo.priceBet && !this.betInfo.isUp){
+        isWin = true;
+      }
+      if(isWin) {
+        this.balance += this.betInfo.amount * 2
+      }
+      this.betInfo.isWin = isWin;
+      this.resetBetNAddHistorical()
+    },
+
     updateMarketData: function() {
         setTimeout(() => {
           this.getMarketData();
         }, 3000);
+    },
+
+    resetBetNAddHistorical: function () {
+      this.historyBets.push(this.betInfo);
+      this.betInfo = {}
     },
 
     makeBet: function (isUp){
