@@ -36,4 +36,76 @@
   justify-content: center;
 }
 
+.price{
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.positif{
+  color:#42b983;
+}
+.negatif{
+  color: #ea3943;
+}
+
+.change{
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.betButton{
+  width: 125px;
+  height: 40px;
+  cursor: pointer;
+  margin-left: 10px ;
+  margin-right: 10px;
+}
+
+.up{
+  color: #42b983;
+  border: 2px solid #42b983;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #ffffff;
+}
+
+.down{
+  color: #ea3943;
+  border: 2px solid #ea3943;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #ffffff;
+}
+
+.balance{
+  display: flex;
+  flex-direction: column;
+}
+
+.info{
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.amount span{
+  font-size: 20px;
+
+}
+
+.containerButton{
+  padding: 10px;
+}
+
+.history{
+  display: flex;
+  flex-direction: column;
+}
+
+.containerHistory{
+  width: 1000px;
+  margin: auto;
+}
+
 </style>

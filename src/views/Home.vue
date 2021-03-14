@@ -2,17 +2,24 @@
   <div class="home">
     <h1>BTC PREDICT PRICE GAME</h1>
     <p>Will Bitcoin go up or down in the next 5min ?</p>
+    <div class="price">$ {{parseFloat(historyBTC[historyBTC.length - 1][4]).toLocaleString()}}</div>
+    <div>
+      <div class="change" :class="{'positif': change > 0, 'negatif': change < 0}">{{change.toLocaleString()}}%</div>
+    </div>
     <div class="chart">
       <apexchart width="500" type="area" :options="options" :series="series"></apexchart>
     </div>
-    <div>$ {{parseFloat(historyBTC[historyBTC.length - 1][4]).toFixed(2)}}</div>
-    <div>
-      <div>{{change.toFixed(2)}}%</div>
+    <div class="balance">
+      <div class="info">Balance</div>
+      <div class="amount">
+        <span>{{balance.toLocaleString()}}</span> points
+      </div>
     </div>
-    <div>{{balance}} points</div>
-    <cardBet v-if="onBet" :betInfo="betInfo"/>
-    <button v-on:click="makeBet(true)">Going Up</button>
-    <button v-on:click="makeBet(false)">Going Down</button>
+    <cardBet v-if="onBet" :betInfo="betInfo" :checkBet="checkBet" :currentPrice="historyBTC[historyBTC.length - 1][4]"/>
+    <div class="containerButton">
+      <button class="betButton up" v-on:click="makeBet(true)">Going Up</button>
+      <button class="betButton down" v-on:click="makeBet(false)">Going Down</button>
+    </div>
   </div>
 </template>
 
@@ -33,6 +40,16 @@ export default {
   },
   created: function() {
     this.getMarketData();
+    if(!localStorage.getItem("balance")){
+      localStorage.setItem("balance", JSON.stringify(this.balance));
+    }else{
+      this.balance = JSON.parse(localStorage.getItem("balance"));
+    }
+    if(!localStorage.getItem("historyBets")){
+      localStorage.setItem('historyBets', JSON.stringify(this.historyBets));
+    }else{
+      this.historyBets = JSON.parse(localStorage.getItem("historyBets"));
+    }
   },
   data: function() {
     return {
@@ -61,7 +78,8 @@ export default {
         },
         stroke: {
           width: 1,
-          curve: 'straight'
+          colors: ["#f7931a"],
+          curve: 'straight',
         },
         tooltip: {
           x: {
@@ -70,11 +88,34 @@ export default {
         },
         fill: {
           type: 'gradient',
+          colors:['#f7931a'],
           gradient: {
             shadeIntensity: 1,
             opacityFrom: 0.7,
             opacityTo: 0.9,
-            stops: [0, 100]
+            colorStop: [
+              {
+                offset: 0,
+                color: "#f7931a",
+                opacity: 0.5
+              },
+              {
+                offset: 20,
+                color: "#f7931a",
+                opacity:  0.4
+              },
+              {
+                offset: 60,
+                color: "#f7931a",
+                opacity:  0.3
+              },
+              {
+                offset: 100,
+                color: "#f7931a",
+                opacity: 0.1
+              }
+            ]
+
           }
         },
       },
@@ -112,18 +153,19 @@ export default {
     },
 
     checkBet: function () {
-      let isWin = false;
-      const currentPrice = this.historyBTC[this.historyBTC.length - 1][4];
-      if(currentPrice > this.betInfo.priceBet && this.betInfo.isUp){
-        isWin = true;
-      }else if(currentPrice < this.betInfo.priceBet && !this.betInfo.isUp){
-        isWin = true;
+      let isWin = false
+      const currentPrice = this.historyBTC[this.historyBTC.length - 1][4]
+      if(currentPrice > this.betInfo.priceBet && this.betInfo.isUp || currentPrice < this.betInfo.priceBet && !this.betInfo.isUp){
+        isWin = true
       }
       if(isWin) {
         this.balance += this.betInfo.amount * 2
+        localStorage.setItem("balance", this.balance);
       }
-      this.betInfo.isWin = isWin;
-      this.resetBetNAddHistorical()
+      this.betInfo.finalPrice = currentPrice;
+      this.betInfo.pending = false;
+      this.betInfo.isWin = isWin
+      this.AddHistorical();
     },
 
     updateMarketData: function() {
@@ -132,19 +174,25 @@ export default {
         }, 3000);
     },
 
-    resetBetNAddHistorical: function () {
+    AddHistorical: function () {
       this.historyBets.push(this.betInfo);
-      this.betInfo = {}
+      localStorage.setItem('historyBets', JSON.stringify(this.historyBets));
     },
 
     makeBet: function (isUp){
+      if(Object.keys(this.betInfo).length !== 0){
+        this.betInfo = {}
+        this.onBet = false;
+      }
       if(this.balance >= 1000 && !this.onBet){
         const betInfo = {
           priceBet: parseFloat(this.historyBTC[this.historyBTC.length - 1][4]),
           amount: 1000,
-          isUp : isUp
+          isUp : isUp,
+          pending: true,
         }
         this.balance -= 1000
+        localStorage.setItem("balance", this.balance);
         this.betInfo = betInfo;
         this.onBet = true;
       }
