@@ -1,5 +1,5 @@
 <template>
-  <countdown :left-time="8000" @finish="checkBet"> <!-- 101 seconds -->
+  <countdown :left-time="300000" @finish="checkBet"> <!-- 101 seconds -->
     <span class="timerCountDown"
       slot="process"
       slot-scope="{ timeObj }" >

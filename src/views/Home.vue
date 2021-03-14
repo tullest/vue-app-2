@@ -12,7 +12,7 @@
     <div class="balance">
       <div class="info">Balance</div>
       <div class="amount">
-        <span>{{balance.toLocaleString()}}</span> points
+        <span>{{userData.balance.toLocaleString()}}</span> points
       </div>
     </div>
     <cardBet v-if="onBet" :betInfo="betInfo" :checkBet="checkBet" :currentPrice="historyBTC[historyBTC.length - 1][4]"/>
@@ -40,15 +40,10 @@ export default {
   },
   created: function() {
     this.getMarketData();
-    if(!localStorage.getItem("balance")){
-      localStorage.setItem("balance", JSON.stringify(this.balance));
+    if(!localStorage.getItem("userData")){
+      localStorage.setItem("userData", JSON.stringify(this.userData))
     }else{
-      this.balance = JSON.parse(localStorage.getItem("balance"));
-    }
-    if(!localStorage.getItem("historyBets")){
-      localStorage.setItem('historyBets', JSON.stringify(this.historyBets));
-    }else{
-      this.historyBets = JSON.parse(localStorage.getItem("historyBets"));
+      this.userData = JSON.parse(localStorage.getItem("userData"));
     }
   },
   data: function() {
@@ -123,10 +118,14 @@ export default {
         name: 'BTC-USDT',
         data: []
       }],
+      userData: {
+        historyBets: [],
+        balance: 10000,
+      },
       historyBTC:[],
       change: 0,
-      balance: 10000,
-      historyBets: [],
+      //balance: 10000,
+      //historyBets: [],
       onBet: false,
       betInfo: {}
     }
@@ -159,8 +158,9 @@ export default {
         isWin = true
       }
       if(isWin) {
-        this.balance += this.betInfo.amount * 2
-        localStorage.setItem("balance", this.balance);
+        this.userData.balance += this.betInfo.amount * 2;
+        //this.balance += this.betInfo.amount * 2
+        //localStorage.setItem("balance", this.balance);
       }
       this.betInfo.finalPrice = currentPrice;
       this.betInfo.pending = false;
@@ -175,8 +175,12 @@ export default {
     },
 
     AddHistorical: function () {
-      this.historyBets.push(this.betInfo);
-      localStorage.setItem('historyBets', JSON.stringify(this.historyBets));
+      this.userData.historyBets.push(this.betInfo);
+      this.addToLocalStorage();
+    },
+
+    addToLocalStorage: function (){
+      localStorage.setItem('userData', JSON.stringify(this.userData));
     },
 
     makeBet: function (isUp){
@@ -184,17 +188,17 @@ export default {
         this.betInfo = {}
         this.onBet = false;
       }
-      if(this.balance >= 1000 && !this.onBet){
+      if(this.userData.balance >= 1000 && !this.onBet){
         const betInfo = {
           priceBet: parseFloat(this.historyBTC[this.historyBTC.length - 1][4]),
           amount: 1000,
           isUp : isUp,
           pending: true,
         }
-        this.balance -= 1000
-        localStorage.setItem("balance", this.balance);
+        this.userData.balance -= 1000
         this.betInfo = betInfo;
         this.onBet = true;
+        this.addToLocalStorage();
       }
     },
 

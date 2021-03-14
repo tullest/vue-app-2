@@ -2,7 +2,7 @@
   <div class="history">
     <h1>HISTORY BETS</h1>
     <div class="containerHistory">
-        <card-history v-for="(bet, index) in historyBets" :betInfo="bet" :index="index"/>
+        <card-history v-for="(bet, index) in userData.historyBets" :betInfo="bet" :index="index"/>
     </div>
   </div>
 </template>
@@ -13,16 +13,13 @@ export default {
   name: 'About',
   components: {CardHistory},
   created: function() {
-    this.historyBets = JSON.parse(localStorage.getItem("historyBets"));
+    this.userData = JSON.parse(localStorage.getItem("userData"));
   },
   data: function() {
     return {
-      historyBets: []
+      userData: {}
+
     }
   },
-  methods: {
-
-  }
-
 }
 </script>
