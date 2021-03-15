@@ -154,9 +154,12 @@ export default {
       if(isWin) {
         this.userData.balance += this.betInfo.amount * 2;
       }
-      this.betInfo.finalPrice = currentPrice;
-      this.betInfo.pending = false;
-      this.betInfo.isWin = isWin
+      const betInfo = {...this.betInfo};
+      betInfo.finalPrice = currentPrice;
+      betInfo.pending = false;
+      betInfo.isWin = isWin;
+
+      this.betInfo = betInfo;
       this.AddHistorical();
     },
 
