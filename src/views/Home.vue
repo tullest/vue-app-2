@@ -25,8 +25,6 @@
 
 <script>
 // @ is an alias to /src
-import HelloWithName from '@/components/HelloWithName.vue'
-import Footer from "@/components/Footer";
 import CardBet from "@/components/cardBet";
 
 const API_URL = "https://api.binance.com/api/v3/";
@@ -35,8 +33,6 @@ export default {
   name: 'Home',
   components: {
     CardBet,
-    HelloWithName,
-    Footer,
   },
   created: function() {
     this.getMarketData();
@@ -124,8 +120,6 @@ export default {
       },
       historyBTC:[],
       change: 0,
-      //balance: 10000,
-      //historyBets: [],
       onBet: false,
       betInfo: {}
     }
@@ -159,8 +153,6 @@ export default {
       }
       if(isWin) {
         this.userData.balance += this.betInfo.amount * 2;
-        //this.balance += this.betInfo.amount * 2
-        //localStorage.setItem("balance", this.balance);
       }
       this.betInfo.finalPrice = currentPrice;
       this.betInfo.pending = false;
